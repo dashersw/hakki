@@ -1,0 +1,29 @@
+{
+  "name": "hakki",
+  "version": "1.0.0",
+  "description": "An opinionated, modern, and scalable alternative to node_acl.",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dashersw/hakki.git"
+  },
+  "keywords": [
+    "acl"
+  ],
+  "author": "Armagan Amcalar <armagan@amcalar.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dashersw/hakki/issues"
+  },
+  "homepage": "https://github.com/dashersw/hakki#readme",
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "mongoose": "^5.2.6"
+  },
+  "peerDependencies": {
+    "mongoose": "^5.2.6"
+  }
+}
