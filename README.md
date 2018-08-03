@@ -3,7 +3,7 @@
 
 ## Features
 * Provides the same functionality with [node_acl](https://github.com/OptimalBits/node_acl) except for `middleware`
-* Works with promises and async/await out of the box
+* Works with promises and async/await out of the box instead of callbacks
 * Requires and works with mongoose
 * Built specifically for MongoDB with aggregation features
 * Scalable architecture to support millions of operations
@@ -69,7 +69,9 @@ Hakki supports the same API footprint as [node_acl](https://github.com/OptimalBi
 * addRoleParents
 * removeRoleParents
 
-Currently, there's no Express middleware support.
+All the functions use promises and no callbacks. So if you rely on callbacks with node_acl, then you will have to refactor your code to use promises, and better yet, async / await.
+
+Also, currently there's no Express middleware support.
 
 Please refer to [node_acl](https://github.com/OptimalBits/node_acl)'s [README](https://github.com/OptimalBits/node_acl/blob/master/README.md#documentation) for detailed documentation.
 
