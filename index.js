@@ -50,6 +50,18 @@ async function hasRole (userId, role) { // boolean
   return !!role
 }
 
+async function isRole (userId, role) {
+  const userHasRole = await hasRole(userId, role)
+  if (userHasRole) return true
+
+  const parents = await RoleParentsModel.find({ role }, 'parents').lean()
+  const roleNames = smoosh(parents.map(p => p.parents))
+
+  role = await RoleUserModel.findOne({ userId, name: { $in: roleNames } })
+
+  return !!role
+}
+
 async function addRoleParents (role, parents) {
   if (!Array.isArray(parents)) parents = [parents]
 
@@ -241,5 +253,6 @@ module.exports = {
   allowedPermissions,
   isAllowed,
   areAnyRolesAllowed,
-  whatResources
+  whatResources,
+  isRole
 }

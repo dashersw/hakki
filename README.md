@@ -68,6 +68,9 @@ Hakki supports the same API footprint as [node_acl](https://github.com/OptimalBi
 * removeResource
 * addRoleParents
 * removeRoleParents
+* isRole
+
+  isRole is a new API that mimicks the behavior of a hasRole call for a user for parent roles as well. Technically when one uses `addRoleParents`, a child role attains an `is-a` relationship with the parent. However, this isn't reflected in `userRoles` or `hasRole`, but in `isAllowed` or `allowedPermissions`. `isRole` is introduced to at least partially cover for this.
 
 All the functions use promises and no callbacks. So if you rely on callbacks with node_acl, then you will have to refactor your code to use promises, and better yet, async / await.
 
@@ -96,4 +99,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-

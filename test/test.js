@@ -368,6 +368,20 @@ test.serial('Wildcard resources', async t => {
   t.false(await hakki.isAllowed('user1', 'resource1', 'edit'))
 })
 
+test.serial('isRole should return true for directly assigned roles', async t => {
+  await hakki.addRoleParents('role1', 'parentRole1')
+  await hakki.addUserRoles('user1', 'parentRole1')
+
+  t.true(await hakki.isRole('user1', 'parentRole1'))
+})
+
+test.serial('isRole should return true for inherited roles', async t => {
+  await hakki.addRoleParents('role1', 'parentRole1')
+  await hakki.addUserRoles('user1', 'parentRole1')
+
+  t.true(await hakki.isRole('user1', 'role1'))
+})
+
 test.after(async t => {
   await mongoose.connection.db.dropDatabase()
 })
