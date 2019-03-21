@@ -23,6 +23,10 @@ test.serial('Own tests', async t => {
 
   t.deepEqual(roleUsers, ['user1', 'user2'])
 
+  let undefinedRoleUsers = await hakki.roleUsers('role3')
+
+  t.deepEqual(undefinedRoleUsers, [])
+
   t.true(await hakki.hasRole('user1', 'role2'))
   t.false(await hakki.hasRole('user1', 'role1'))
 
@@ -142,7 +146,7 @@ test.serial('node_acl tests', async t => {
     [['suzanne', 'forums', ['delete', 'put']], true],
     [[4, 'forums', ['delete', 'put']], true],
     [['nobody', 'blogs', 'view'], false],
-    [['nobody', 'nothing', 'view'], false],
+    [['nobody', 'nothing', 'view'], false]
   ]
 
   const promises = isAllowedChecks.map(c => hakki.isAllowed(...c[0]))
@@ -197,7 +201,7 @@ test.serial('node_acl tests', async t => {
   await hakki.removeAllow('fumanchu', 'news', 'delete')
   await hakki.removeAllow('bar', 'blogs', 'view')
 
-  res = await hakki.whatResources('fumanchu')
+  res = await hakki.whatResources(['fumanchu'])
 
   t.false('blogs' in res)
   t.true('news' in res)
