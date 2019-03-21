@@ -1,6 +1,7 @@
 import test from 'ava'
 import mongoose from 'mongoose'
 import hakki from '../'
+import randomstring from 'randomstring'
 
 test.before(async t => {
   await mongoose.connect('mongodb://localhost:27017/hakki_tests', { useNewUrlParser: true })
@@ -369,19 +370,76 @@ test.serial('Wildcard resources', async t => {
 })
 
 test.serial('isRole should return true for directly assigned roles', async t => {
-  await hakki.addRoleParents('role1', 'parentRole1')
-  await hakki.addUserRoles('user1', 'parentRole1')
+  const id = randomstring.generate()
 
-  t.true(await hakki.isRole('user1', 'parentRole1'))
+  await hakki.addRoleParents(`admin${id}`, `user${id}`)
+  await hakki.addUserRoles(`person${id}`, `user${id}`)
+
+  await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
+  await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
+
+  t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`), 'Person is not allowed to use the resource')
+
+  t.true(await hakki.isRole(`person${id}`, `user${id}`), 'Person has not inherited the user role')
 })
 
 test.serial('isRole should return true for inherited roles', async t => {
-  await hakki.addRoleParents('role1', 'parentRole1')
-  await hakki.addUserRoles('user1', 'parentRole1')
+  const id = randomstring.generate()
 
-  t.true(await hakki.isRole('user1', 'role1'))
+  await hakki.addRoleParents(`admin${id}`, `user${id}`)
+  await hakki.addUserRoles(`person${id}`, `admin${id}`)
+
+  await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
+  await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
+
+  t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`), 'Person is not allowed to use the resource')
+
+  t.true(await hakki.isRole(`person${id}`, `user${id}`), 'Person has not inherited the user role')
+})
+
+test.serial('isRole on an empty role returns false', async t => {
+  const id = randomstring.generate()
+
+  t.false(await hakki.isRole(`person${id}`, `guest${id}`))
+})
+
+test.serial('isRole should return true for several layers of inherited roles', async t => {
+  const id = randomstring.generate()
+
+  await hakki.addRoleParents(`user${id}`, `guest${id}`)
+  await hakki.addRoleParents(`admin${id}`, `user${id}`)
+  await hakki.addUserRoles(`person${id}`, `admin${id}`)
+
+  await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
+  await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
+  await hakki.allow(`guest${id}`, `resource${id}`, `view${id}`)
+
+  t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `view${id}`), 'Person is not allowed to view the resource')
+
+  t.true(await hakki.isRole(`person${id}`, `guest${id}`), 'Person has not inherited the guest role')
+
+  t.true(await hakki.isRole(`person${id}`, [`guest${id}`, `visitor${id}`]), 'Person has not inherited either the guest role or does not have a visitor role')
+})
+
+test.serial('get parent roles', async t => {
+  const id = randomstring.generate()
+
+  await hakki.addRoleParents(`user${id}`, `guest${id}`)
+  await hakki.addRoleParents(`admin${id}`, `user${id}`)
+  await hakki.addUserRoles(`person${id}`, `admin${id}`)
+
+  await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
+  await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
+  await hakki.allow(`guest${id}`, `resource${id}`, `view${id}`)
+
+  t.deepEqual(await hakki.allowedPermissions(`person${id}`, `resource${id}`), { [`resource${id}`]: [ `view${id}`, `use${id}`, `manage${id}` ] }, 'Person is not allowed to view the resource')
+  t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
+
+  await hakki.addUserRoles(`person${id}`, [`user${id}`])
+  t.deepEqual(await hakki.allowedPermissions(`person${id}`, `resource${id}`), { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] }, 'Person is not allowed to view the resource')
+  // t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
 })
 
 test.after(async t => {
-  await mongoose.connection.db.dropDatabase()
+  // await mongoose.connection.db.dropDatabase()
 })

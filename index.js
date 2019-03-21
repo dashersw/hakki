@@ -45,21 +45,62 @@ async function roleUsers (role) { // return user ids
 }
 
 async function hasRole (userId, role) { // boolean
-  role = await RoleUserModel.findOne({ userId, name: role }).lean()
+  const query = { userId, name: role }
+
+  if (Array.isArray(role)) query.name = { $in: role }
+
+  role = await RoleUserModel.findOne(query).lean()
 
   return !!role
+}
+
+async function getAllParentRoles (role) {
+  let graph = await RoleParentsModel.aggregate()
+    .match({ role: { $in: role } })
+    .graphLookup({
+      from: 'acl_role_parents',
+      startWith: '$role',
+      connectFromField: 'parents',
+      connectToField: 'role',
+      as: 'allParents'
+    })
+    .project({
+      allParentRoles: '$allParents.parents'
+    })
+
+  if (!graph[0]) return []
+
+  return smoosh(graph[0].allParentRoles)
+}
+
+async function getAllChildrenRoles (role) {
+  if (!Array.isArray(role)) role = [ role ]
+
+  let graph = await RoleParentsModel.aggregate()
+    .match({ parents: { $in: role } })
+    .graphLookup({
+      from: 'acl_role_parents',
+      startWith: '$parents',
+      connectFromField: 'role',
+      connectToField: 'parents',
+      as: 'allChildren'
+    })
+    .project({
+      allChildrenRoles: '$allChildren.role'
+    })
+
+  if (!graph[0]) return []
+
+  return graph[0].allChildrenRoles
 }
 
 async function isRole (userId, role) {
   const userHasRole = await hasRole(userId, role)
   if (userHasRole) return true
 
-  const parents = await RoleParentsModel.find({ role }, 'parents').lean()
-  const roleNames = smoosh(parents.map(p => p.parents))
-
-  role = await RoleUserModel.findOne({ userId, name: { $in: roleNames } })
-
-  return !!role
+  const parentRoles = await getAllChildrenRoles(role)
+  console.log('isrole', userId, role, parentRoles)
+  return hasRole(userId, parentRoles)
 }
 
 async function addRoleParents (role, parents) {
@@ -127,8 +168,8 @@ async function allowedPermissions (userId, resources) { // returns array of obje
 
   const roles = await RoleUserModel.find({ userId }, 'name').lean()
   let roleNames = roles.map(r => r.name)
-  const parents = await RoleParentsModel.find({ role: { $in: roleNames } }, 'parents').lean()
-  roleNames = roleNames.concat(smoosh(parents.map(p => p.parents)))
+  const parents = await getAllParentRoles(roleNames)
+  roleNames = roleNames.concat(parents)
 
   const permissions = await AllowModel.aggregate()
     .match({ resource: { $in: resources }, role: { $in: roleNames } })
@@ -160,8 +201,8 @@ async function isAllowed (userId, resource, permissions) { // boolean all permis
 
   const roles = await RoleUserModel.find({ userId }, 'name').lean()
   let roleNames = roles.map(r => r.name)
-  const parents = await RoleParentsModel.find({ role: { $in: roleNames } }, 'parents').lean()
-  roleNames = roleNames.concat(smoosh(parents.map(p => p.parents)))
+  const parents = await getAllParentRoles(roleNames)
+  roleNames = roleNames.concat(parents)
 
   let hasWildcardAccess = await AllowModel.countDocuments({
     resource,
@@ -204,8 +245,8 @@ async function areAnyRolesAllowed (roles, resource, permissions) { // boolean
 
 async function whatResources (role, permissions) { // return resources role has perm over
   if (!Array.isArray(role)) role = [role]
-  const parents = await RoleParentsModel.find({ role: { $in: role } }, 'parents').lean()
-  role = role.concat(smoosh(parents.map(p => p.parents)))
+  const parents = await getAllParentRoles(role)
+  role = role.concat(parents)
 
   let allow = AllowModel.aggregate()
     .match({ role: { $in: role } })

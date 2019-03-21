@@ -31,7 +31,8 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "mongoose": "^5.4.19",
-    "nyc": "^13.3.0"
+    "nyc": "^13.3.0",
+    "randomstring": "^1.1.5"
   },
   "peerDependencies": {
     "mongoose": "^5.2.6"
