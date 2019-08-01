@@ -99,7 +99,7 @@ async function isRole (userId, role) {
   if (userHasRole) return true
 
   const parentRoles = await getAllChildrenRoles(role)
-  console.log('isrole', userId, role, parentRoles)
+
   return hasRole(userId, parentRoles)
 }
 
