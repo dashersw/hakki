@@ -279,6 +279,20 @@ async function whatResources (role, permissions) { // return resources role has 
   return permissions ? Object.keys(allow[0]) : allow[0]
 }
 
+/**
+ * Returns all the unique roles
+ */
+async function getDistinctRoles () {
+  return AllowModel.distinct('role').lean()
+}
+
+/**
+ * Returns all the unique permissions
+ */
+async function getDistinctPermissions () {
+  return AllowModel.distinct('permission').lean()
+}
+
 module.exports = {
   addUserRoles,
   removeUserRoles,
@@ -295,5 +309,7 @@ module.exports = {
   isAllowed,
   areAnyRolesAllowed,
   whatResources,
-  isRole
+  isRole,
+  getDistinctRoles,
+  getDistinctPermissions
 }

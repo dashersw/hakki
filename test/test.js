@@ -440,6 +440,40 @@ test.serial('get parent roles', async t => {
   // t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
 })
 
+test.serial('get distinct roles & permissions', async t => {
+  await hakki.allow(['distinctrole1', 'distinctrole2'], ['res1', 'res2'], ['distinctperm1', 'distinctperm2'])
+  await hakki.allow(['distinctrole1', 'distinctrole3'], ['res3', 'res4'], ['distinctperm1', 'distinctperm3'])
+
+  let distinctRoles = await hakki.getDistinctRoles()
+
+  const includesArray = (containerArray, subArray) => {
+    return subArray.every(elem => containerArray.includes(elem))
+  }
+
+  // check whether new roles are included in the distinct roles
+  t.true(includesArray(distinctRoles, ['distinctrole1', 'distinctrole2', 'distinctrole3']))
+
+  await hakki.removeRole('distinctrole1')
+
+  distinctRoles = await hakki.getDistinctRoles()
+
+  t.true(includesArray(distinctRoles, ['distinctrole2', 'distinctrole3']))
+  t.false(includesArray(distinctRoles, ['distinctrole1']))
+
+  let distinctPermissions = await hakki.getDistinctPermissions()
+
+  // check whether new permissions are included in the distinct permissions
+  t.true(includesArray(distinctPermissions, ['distinctperm1', 'distinctperm2', 'distinctperm3']))
+
+  await hakki.removeAllow(['distinctrole2'], ['res1', 'res2'], ['distinctperm1'])
+  await hakki.removeAllow(['distinctrole3'], ['res3', 'res4'], ['distinctperm1'])
+
+  distinctPermissions = await hakki.getDistinctPermissions()
+
+  t.true(includesArray(distinctPermissions, ['distinctperm2', 'distinctperm3']))
+  t.false(includesArray(distinctPermissions, ['distinctperm1']))
+})
+
 test.after(async t => {
   // await mongoose.connection.db.dropDatabase()
 })
