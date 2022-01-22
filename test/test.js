@@ -152,7 +152,10 @@ test.serial('node_acl tests', async t => {
 
   const promises = isAllowedChecks.map(c => hakki.isAllowed(...c[0]))
   const results = await Promise.all(promises)
-  t.deepEqual(results, isAllowedChecks.map(c => c[1]))
+  t.deepEqual(
+    results,
+    isAllowedChecks.map(c => c[1])
+  )
 
   let perms = await hakki.allowedPermissions('james', ['blogs', 'forums'])
   t.true('blogs' in perms)
@@ -414,11 +417,17 @@ test.serial('isRole should return true for several layers of inherited roles', a
   await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
   await hakki.allow(`guest${id}`, `resource${id}`, `view${id}`)
 
-  t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `view${id}`), 'Person is not allowed to view the resource')
+  t.true(
+    await hakki.isAllowed(`person${id}`, `resource${id}`, `view${id}`),
+    'Person is not allowed to view the resource'
+  )
 
   t.true(await hakki.isRole(`person${id}`, `guest${id}`), 'Person has not inherited the guest role')
 
-  t.true(await hakki.isRole(`person${id}`, [`guest${id}`, `visitor${id}`]), 'Person has not inherited either the guest role or does not have a visitor role')
+  t.true(
+    await hakki.isRole(`person${id}`, [`guest${id}`, `visitor${id}`]),
+    'Person has not inherited either the guest role or does not have a visitor role'
+  )
 })
 
 test.serial('get parent roles', async t => {
@@ -432,11 +441,23 @@ test.serial('get parent roles', async t => {
   await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
   await hakki.allow(`guest${id}`, `resource${id}`, `view${id}`)
 
-  t.deepEqual(await hakki.allowedPermissions(`person${id}`, `resource${id}`), { [`resource${id}`]: [ `view${id}`, `use${id}`, `manage${id}` ] }, 'Person is not allowed to view the resource')
-  t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
+  t.deepEqual(
+    await hakki.allowedPermissions(`person${id}`, `resource${id}`),
+    { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] },
+    'Person is not allowed to view the resource'
+  )
+  t.deepEqual(
+    await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`),
+    [`resource${id}`],
+    'Admin is not allowed to view the resource'
+  )
 
   await hakki.addUserRoles(`person${id}`, [`user${id}`])
-  t.deepEqual(await hakki.allowedPermissions(`person${id}`, `resource${id}`), { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] }, 'Person is not allowed to view the resource')
+  t.deepEqual(
+    await hakki.allowedPermissions(`person${id}`, `resource${id}`),
+    { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] },
+    'Person is not allowed to view the resource'
+  )
   // t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
 })
 
