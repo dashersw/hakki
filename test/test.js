@@ -441,11 +441,14 @@ test.serial('get parent roles', async t => {
   await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
   await hakki.allow(`guest${id}`, `resource${id}`, `view${id}`)
 
+  const allowedPermissions = await hakki.allowedPermissions(`person${id}`, `resource${id}`)
+
   t.deepEqual(
-    await hakki.allowedPermissions(`person${id}`, `resource${id}`),
-    { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] },
+    allowedPermissions[`resource${id}`].sort(),
+    [`view${id}`, `use${id}`, `manage${id}`].sort(),
     'Person is not allowed to view the resource'
   )
+
   t.deepEqual(
     await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`),
     [`resource${id}`],
@@ -453,9 +456,12 @@ test.serial('get parent roles', async t => {
   )
 
   await hakki.addUserRoles(`person${id}`, [`user${id}`])
+
+  const allowedPermissions2 = await hakki.allowedPermissions(`person${id}`, `resource${id}`)
+
   t.deepEqual(
-    await hakki.allowedPermissions(`person${id}`, `resource${id}`),
-    { [`resource${id}`]: [`view${id}`, `use${id}`, `manage${id}`] },
+    allowedPermissions2[`resource${id}`].sort(),
+    [`view${id}`, `use${id}`, `manage${id}`].sort(),
     'Person is not allowed to view the resource'
   )
   // t.deepEqual(await hakki.whatResources(`admin${id}`, `view${id}`, `resource${id}`), [`resource${id}`], 'Admin is not allowed to view the resource')
