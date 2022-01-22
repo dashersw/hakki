@@ -1,7 +1,7 @@
-const AllowModel = require('./lib/models/allow')
-const RoleUserModel = require('./lib/models/role-user')
-const RoleParentsModel = require('./lib/models/role-parents')
-const UserModel = require('./lib/models/user')
+const AllowModel = require('./lib/models/memory/allow')
+const RoleUserModel = require('./lib/models/memory/role-user')
+const RoleParentsModel = require('./lib/models/memory/role-parents')
+const UserModel = require('./lib/models/memory/user')
 
 const smoosh = require('./lib/smoosh')
 
@@ -36,10 +36,7 @@ async function userRoles (userId) { // return roles
 }
 
 async function roleUsers (role) { // return user ids
-  const roles = await RoleUserModel.aggregate().match({ name: role }).group({
-    _id: null,
-    users: { $push: '$userId' }
-  }).allowDiskUse()
+  const roles = await RoleUserModel.getUsersWithRole(role)
 
   return (roles && roles[0] && roles[0].users) || []
 }
@@ -55,18 +52,7 @@ async function hasRole (userId, role) { // boolean
 }
 
 async function getAllParentRoles (role) {
-  let graph = await RoleParentsModel.aggregate()
-    .match({ role: { $in: role } })
-    .graphLookup({
-      from: 'acl_role_parents',
-      startWith: '$role',
-      connectFromField: 'parents',
-      connectToField: 'role',
-      as: 'allParents'
-    })
-    .project({
-      allParentRoles: '$allParents.parents'
-    })
+  let graph = await RoleParentsModel.getAllParentRolesOfRole(role)
 
   if (!graph[0]) return []
 
@@ -76,18 +62,7 @@ async function getAllParentRoles (role) {
 async function getAllChildrenRoles (role) {
   if (!Array.isArray(role)) role = [ role ]
 
-  let graph = await RoleParentsModel.aggregate()
-    .match({ parents: { $in: role } })
-    .graphLookup({
-      from: 'acl_role_parents',
-      startWith: '$parents',
-      connectFromField: 'role',
-      connectToField: 'parents',
-      as: 'allChildren'
-    })
-    .project({
-      allChildrenRoles: '$allChildren.role'
-    })
+  let graph = await RoleParentsModel.createGraph(role)
 
   if (!graph[0]) return []
 
@@ -171,23 +146,7 @@ async function allowedPermissions (userId, resources) { // returns array of obje
   const parents = await getAllParentRoles(roleNames)
   roleNames = roleNames.concat(parents)
 
-  const permissions = await AllowModel.aggregate()
-    .match({ resource: { $in: resources }, role: { $in: roleNames } })
-    .group({ _id: { resource: '$resource' }, permissions: { $addToSet: '$permission' } })
-    .project({ _id: 0, resource: '$_id.resource', permissions: '$permissions' })
-    .group({ _id: null, resourceAndPermissions: { $push: '$$ROOT' } })
-    .project({
-      results: {
-        $arrayToObject: {
-          $map: {
-            input: '$resourceAndPermissions',
-            as: 'pair',
-            in: ['$$pair.resource', '$$pair.permissions']
-          }
-        }
-      }
-    })
-    .replaceRoot('$results')
+  const permissions = await AllowModel.getAllPermissionsForResourcesAndRoles(resources, roleNames)
 
   if (!permissions[0]) permissions[0] = []
 
@@ -234,11 +193,7 @@ async function isAllowed (userId, resource, permissions) { // boolean all permis
 }
 
 async function areAnyRolesAllowed (roles, resource, permissions) { // boolean
-  const allowed = await AllowModel.aggregate()
-    .match({ role: { $in: roles }, resource, permission: { $in: permissions } })
-    .group({ _id: { role: '$role', resource: '$resource' }, permissions: { $push: '$permission' } })
-    .match({ permissions: { $size: permissions.length } })
-    .count('matches')
+  const allowed = await AllowModel.areAnyRolesAllowed(roles, resource, permissions)
 
   return !!allowed.length
 }
@@ -248,31 +203,7 @@ async function whatResources (role, permissions) { // return resources role has 
   const parents = await getAllParentRoles(role)
   role = role.concat(parents)
 
-  let allow = AllowModel.aggregate()
-    .match({ role: { $in: role } })
-    .group({ _id: { resource: '$resource' }, permissions: { $addToSet: '$permission' } })
-    .project({ _id: 0, resource: '$_id.resource', permissions: '$permissions' })
-
-  if (permissions) {
-    if (!Array.isArray(permissions)) permissions = [permissions]
-    allow = allow.match({ permissions: { $all: permissions } })
-  }
-
-  allow.group({ _id: null, resourceAndPermissions: { $push: '$$ROOT' } })
-    .project({
-      results: {
-        $arrayToObject: {
-          $map: {
-            input: '$resourceAndPermissions',
-            as: 'pair',
-            in: ['$$pair.resource', '$$pair.permissions']
-          }
-        }
-      }
-    })
-    .replaceRoot('$results')
-
-  allow = await allow
+  const allow = await AllowModel.getAllowedPermissionsOfRoles(role, permissions)
 
   if (allow.length == 0) return allow
 
