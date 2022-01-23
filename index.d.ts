@@ -70,7 +70,7 @@ export function removeRole(role: string): Promise<void>
 export function removeResource(resource: string): Promise<void>
 
 export function allow(
-  bulkAccessRuleRequest: BulkAccessRuleRequest
+  bulkAccessRuleRequest: BulkAccessRuleRequest | BulkAccessRuleRequest[]
 ): Promise<AccessRuleDocument[]>
 
 export function allow(
