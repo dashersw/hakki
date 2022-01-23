@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/dashersw/hakki#readme",
   "devDependencies": {
-    "ava": "^1.4.1",
+    "ava": "^4.0.1",
     "eslint": "^8.7.0",
     "eslint-config-standard": "^17.0.0-0",
     "mongoose": "^6.1.7",

@@ -1,7 +1,7 @@
-import test from 'ava'
-import mongoose from 'mongoose'
-import hakki from '../'
-import randomstring from 'randomstring'
+const test = require('ava')
+const mongoose = require('mongoose')
+const hakki = require('../')
+const randomstring = require('randomstring')
 
 test.before(async t => {
   await mongoose.connect('mongodb://localhost:27017/hakki_tests', { useNewUrlParser: true })
