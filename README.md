@@ -9,6 +9,11 @@
 * Scalable architecture to support millions of operations
 * Supports wildcard resources for a lighter database
 
+## Migrating from v1 to v2
+As of version 2 hakki runs with an in-memory backend by default. This means mongoose is an optional dependency, and one can use hakki in projects that don't use MongoDB. This is particularly useful for unit testing purposes where hakki is required but running MongoDB isn't feasible.
+
+In-memory backend is now the default and users are required to import and then call hakki with an options object. Check out [Providing mongoose](#providing-mongoose) for instructions on how to use the mongoose backend. Simply requiring hakki without calling it with an options object will result in the default behavior of using in-memory backend.
+
 ## Motivation
 [node_acl](https://github.com/OptimalBits/node_acl) is great until you need to scale it with MongoDB. It's originally built for redis, and MongoDB backend is problematic at scale where you modify the same document that holds 200,000 properties in it. The fact that it works on a MongoDB connection makes it hard to operate it with clusters, as well.
 
@@ -26,7 +31,7 @@ Just require mongoose and connect to database however you wish:
 
 ```js
 const mongoose = require('mongoose')
-const hakki = require('hakki')
+const hakki = require('hakki')({ backend: 'mongoose' })
 
 mongoose.connect('mongodb://localhost:27017/acl', { useNewUrlParser: true })
 ```

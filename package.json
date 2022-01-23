@@ -6,7 +6,7 @@
   "types": "index.d.ts",
   "scripts": {
     "coverage": "nyc report",
-    "test": "nyc --check-coverage --lines 100 -x=lib/smoosh.js ava --verbose",
+    "test": "nyc --check-coverage --lines 100 ava --verbose",
     "lint": "eslint .",
     "lint-fix": "eslint --fix ."
   },
@@ -34,6 +34,11 @@
   "peerDependencies": {
     "mongoose": "^5.2.6"
   },
+  "peerDependenciesMeta": {
+    "mongoose": {
+      "optional": true
+    }
+  },
   "eslintConfig": {
     "extends": "standard",
     "rules": {
@@ -42,5 +47,11 @@
     "parserOptions": {
       "ecmaVersion": "2022"
     }
+  },
+  "dependencies": {
+    "lodash": "4.17.21"
+  },
+  "engines": {
+    "node": ">=12"
   }
 }
