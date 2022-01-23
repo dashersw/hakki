@@ -1,6 +1,6 @@
 {
   "name": "hakki",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "An opinionated, modern, and scalable alternative to node_acl.",
   "main": "index.js",
   "types": "index.d.ts",
