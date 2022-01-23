@@ -55,7 +55,7 @@ async function hasRole (userId, role) { // boolean
 }
 
 async function getAllParentRoles (role) {
-  let graph = await RoleParentsModel.aggregate()
+  const graph = await RoleParentsModel.aggregate()
     .match({ role: { $in: role } })
     .graphLookup({
       from: 'acl_role_parents',
@@ -74,9 +74,9 @@ async function getAllParentRoles (role) {
 }
 
 async function getAllChildrenRoles (role) {
-  if (!Array.isArray(role)) role = [ role ]
+  if (!Array.isArray(role)) role = [role]
 
-  let graph = await RoleParentsModel.aggregate()
+  const graph = await RoleParentsModel.aggregate()
     .match({ parents: { $in: role } })
     .graphLookup({
       from: 'acl_role_parents',

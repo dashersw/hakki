@@ -20,11 +20,11 @@ test.serial('Own tests', async t => {
   t.deepEqual(roles, ['role2'])
 
   await hakki.addUserRoles('user2', ['role2'])
-  let roleUsers = await hakki.roleUsers('role2')
+  const roleUsers = await hakki.roleUsers('role2')
 
   t.deepEqual(roleUsers, ['user1', 'user2'])
 
-  let undefinedRoleUsers = await hakki.roleUsers('role3')
+  const undefinedRoleUsers = await hakki.roleUsers('role3')
 
   t.deepEqual(undefinedRoleUsers, [])
 
@@ -39,7 +39,7 @@ test.serial('Own tests', async t => {
   await hakki.allow(['role3'], ['res3'], ['perm3'])
   await hakki.addUserRoles('user1', ['role1', 'role2', 'role3'])
 
-  let perms = await hakki.allowedPermissions('user1', ['res1', 'res2'])
+  const perms = await hakki.allowedPermissions('user1', ['res1', 'res2'])
   perms.res1.sort()
   perms.res2.sort()
 
@@ -48,7 +48,7 @@ test.serial('Own tests', async t => {
     res2: ['perm1', 'perm2']
   })
 
-  let perm = await hakki.allowedPermissions('user1', ['res3'])
+  const perm = await hakki.allowedPermissions('user1', ['res3'])
   t.deepEqual(perm, { res3: ['perm3'] })
 
   t.true(await hakki.isAllowed('user1', 'res1', ['perm1']))
