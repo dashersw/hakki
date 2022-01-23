@@ -27,7 +27,7 @@ async function removeUserRoles (userId, roles) {
 }
 
 async function userRoles (userId) { // return roles
-  const roles = await RoleUserModel.find({ userId }).lean()
+  const roles = await RoleUserModel.find({ userId }, null, { lean: true })
   return roles.map(r => r.name)
 }
 
@@ -42,7 +42,7 @@ async function hasRole (userId, role) { // boolean
 
   if (Array.isArray(role)) query.name = { $in: role }
 
-  role = await RoleUserModel.findOne(query).lean()
+  role = await RoleUserModel.findOne(query, null, { lean: true })
 
   return !!role
 }
@@ -137,7 +137,7 @@ async function removeAllow (roles, resources, permissions) {
 async function allowedPermissions (userId, resources) { // returns array of objects
   if (!Array.isArray(resources)) resources = [resources]
 
-  const roles = await RoleUserModel.find({ userId }, 'name').lean()
+  const roles = await RoleUserModel.find({ userId }, 'name', { lean: true })
   let roleNames = roles.map(r => r.name)
   const parents = await getAllParentRoles(roleNames)
   roleNames = roleNames.concat(parents)
@@ -154,7 +154,7 @@ async function allowedPermissions (userId, resources) { // returns array of obje
 async function isAllowed (userId, resource, permissions) { // boolean all permissions
   if (!Array.isArray(permissions)) permissions = [permissions]
 
-  const roles = await RoleUserModel.find({ userId }, 'name').lean()
+  const roles = await RoleUserModel.find({ userId }, 'name', { lean: true })
   let roleNames = roles.map(r => r.name)
   const parents = await getAllParentRoles(roleNames)
   roleNames = roleNames.concat(parents)
@@ -179,7 +179,7 @@ async function isAllowed (userId, resource, permissions) { // boolean all permis
     resource: /\*/,
     role: { $in: roleNames },
     permission: { $in: permissions }
-  }).lean()
+  }, null, { lean: true })
 
   if (!wildcardResourceAllows.length) return false
 
@@ -210,14 +210,14 @@ async function whatResources (role, permissions) { // return resources role has 
  * Returns all the unique roles
  */
 async function getDistinctRoles () {
-  return AllowModel.distinct('role').lean()
+  return AllowModel.distinct('role')
 }
 
 /**
  * Returns all the unique permissions
  */
 async function getDistinctPermissions () {
-  return AllowModel.distinct('permission').lean()
+  return AllowModel.distinct('permission')
 }
 
 const methods = {
