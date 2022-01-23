@@ -35,35 +35,20 @@ interface RoleParentsDocument extends RoleParents, Document {}
 interface AccessRuleDocument extends AccessRule, Document {}
 interface UserDocument extends User, Document {}
 
-export function addUserRoles(
-  userId: string,
-  roles: string | string[]
-): Promise<UserDocument>
+export function addUserRoles(userId: string, roles: string | string[]): Promise<UserDocument>
 
-export function removeUserRoles(
-  userId: string,
-  roles: string | string[]
-): Promise<void>
+export function removeUserRoles(userId: string, roles: string | string[]): Promise<void>
 
 export function userRoles(userId: string): Promise<string[]>
 
 export function roleUsers(role: string): Promise<string[]>
 
-export function hasRole(
-  userId: string,
-  role: string | string[]
-): Promise<boolean>
+export function hasRole(userId: string, role: string | string[]): Promise<boolean>
 
-export function addRoleParents(
-  role: string,
-  parents: string | string[]
-): Promise<RoleParentsDocument>
+export function addRoleParents(role: string, parents: string | string[]): Promise<RoleParentsDocument>
 
 export function removeRoleParents(role: string): Promise<RemovalResponse>
-export function removeRoleParents(
-  role: string,
-  parents?: string | string[]
-): Promise<RoleParentsDocument>
+export function removeRoleParents(role: string, parents?: string | string[]): Promise<RoleParentsDocument>
 
 export function removeRole(role: string): Promise<void>
 
@@ -85,22 +70,14 @@ export function removeAllow(
   permissions: string | string[]
 ): Promise<RemovalResponse[]>
 
-export function allowedPermissions<
-  T extends string,
-  U = { [K in T]: string[] }
->(userId: string, resources: T | T[]): Promise<U>
-
-export function isAllowed(
+export function allowedPermissions<T extends string, U = { [K in T]: string[] }>(
   userId: string,
-  resource: string,
-  permissions: string | string[]
-): Promise<boolean>
+  resources: T | T[]
+): Promise<U>
 
-export function areAnyRolesAllowed(
-  roles: string[],
-  resource: string,
-  permissions: string[]
-): Promise<boolean>
+export function isAllowed(userId: string, resource: string, permissions: string | string[]): Promise<boolean>
+
+export function areAnyRolesAllowed(roles: string[], resource: string, permissions: string[]): Promise<boolean>
 
 export function whatResources(
   role: string | string[],
