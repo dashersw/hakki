@@ -89,3 +89,5 @@ export function isRole(userId: string, role: string): Promise<boolean>
 export function getDistinctRoles(): Promise<string[]>
 
 export function getDistinctPermissions(): Promise<string[]>
+
+export function roleUsersWithParentRoles(role: string): Promise<string[]>
