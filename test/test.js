@@ -537,6 +537,29 @@ function runTests (type) {
     t.true(includesArray(distinctPermissions, ['distinctperm2', 'distinctperm3']))
     t.false(includesArray(distinctPermissions, ['distinctperm1']))
   })
+
+  test.serial(`${type} get users of a role and its parents`, async t => {
+    await hakki.allow(['parent1', 'parent2'], ['resource1', 'resource2'], ['permission1', 'permission2'])
+    await hakki.allow(['randomRole'], ['randomResource'], ['randomPermission'])
+
+    await hakki.addRoleParents('child1', ['parent1'])
+    await hakki.addRoleParents('child2', ['parent1'])
+    await hakki.addRoleParents('child3', ['parent2'])
+
+    await hakki.addUserRoles('user1', 'child1')
+    await hakki.addUserRoles('user2', 'parent1')
+    await hakki.addUserRoles('user3', 'parent1')
+    await hakki.addUserRoles('randomUser', 'randomRole')
+
+    const users = await hakki.roleUsersWithParentRoles('child1')
+    const users2 = await hakki.roleUsersWithParentRoles('parent1')
+    const users3 = await hakki.roleUsersWithParentRoles('notExistingRole')
+
+    t.true(users.includes('user1', 'user2', 'user3'))
+    t.true(users2.includes('user2', 'user3'))
+    t.false(users.includes('randomUser'))
+    t.is(users3.length, 0)
+  })
 }
 
 test.afterEach(async t => {
