@@ -560,6 +560,32 @@ function runTests (type) {
     t.false(users.includes('randomUser'))
     t.is(users3.length, 0)
   })
+
+  test.serial(`${type} roleUsersIncludingInheritedRoles`, async t => {
+    await hakki.allow(['grandparent1'], ['resource1'], ['permission1'])
+    await hakki.allow(['parent1'], ['resource2'], ['permission2'])
+    await hakki.allow(['child1'], ['resource3'], ['permission3'])
+
+    await hakki.addRoleParents('parent1', ['grandparent1'])
+    await hakki.addRoleParents('child1', ['parent1'])
+
+    await hakki.addUserRoles('user-parent1', 'parent1')
+    await hakki.addUserRoles('user-grandparent1', 'grandparent1')
+    await hakki.addUserRoles('user-child1', 'child1')
+    await hakki.addUserRoles('randomUser', 'randomRole')
+
+    const usersOfChildRole = await hakki.roleUsersIncludingInheritedRoles('child1')
+    const usersOfParentRole = await hakki.roleUsersIncludingInheritedRoles('parent1')
+    const usersOfGrandParentRole = await hakki.roleUsersIncludingInheritedRoles('grandparent1')
+    const usersOfChildRoleArrayUsage = await hakki.roleUsersIncludingInheritedRoles(['child1'])
+    const empty = await hakki.roleUsersIncludingInheritedRoles('notExistingRole')
+
+    t.deepEqual(usersOfChildRole.sort(), ['user-child1'])
+    t.deepEqual(usersOfParentRole.sort(), ['user-child1', 'user-parent1'])
+    t.deepEqual(usersOfGrandParentRole.sort(), ['user-child1', 'user-grandparent1', 'user-parent1'])
+    t.deepEqual(usersOfChildRoleArrayUsage, ['user-child1'])
+    t.is(empty.length, 0)
+  })
 }
 
 test.afterEach(async t => {
