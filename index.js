@@ -44,6 +44,15 @@ async function roleUsersWithParentRoles(role) {
   return (result && result[0] && result[0].users) || []
 }
 
+async function roleUsersIncludingInheritedRoles(role) {
+  // return user ids
+  const roles = Array.isArray(role) ? role : [role]
+
+  const result = await RoleUserModel.getUsersIncludingInheritedRoles(roles)
+
+  return (result && result[0] && result[0].users) || []
+}
+
 async function hasRole (userId, role) { // boolean
   const query = { userId, name: role }
 
@@ -233,6 +242,7 @@ const methods = {
   userRoles,
   roleUsers,
   roleUsersWithParentRoles,
+  roleUsersIncludingInheritedRoles,
   hasRole,
   addRoleParents,
   removeRoleParents,

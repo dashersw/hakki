@@ -91,3 +91,5 @@ export function getDistinctRoles(): Promise<string[]>
 export function getDistinctPermissions(): Promise<string[]>
 
 export function roleUsersWithParentRoles(role: string): Promise<string[]>
+
+export function roleUsersIncludingInheritedRoles(role: string | string[]): Promise<string[]>
