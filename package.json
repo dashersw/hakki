@@ -32,7 +32,7 @@
     "randomstring": "^1.2.2"
   },
   "peerDependencies": {
-    "mongoose": "^5.2.6"
+    "mongoose": "^5.2.6 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "mongoose": {
