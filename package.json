@@ -42,10 +42,11 @@
   "eslintConfig": {
     "extends": "standard",
     "rules": {
-      "eqeqeq": "off"
+      "eqeqeq": "off",
+      "arrow-parens": [2, "as-needed"]
     },
     "parserOptions": {
-      "ecmaVersion": "2022"
+      "ecmaVersion": 2022
     }
   },
   "dependencies": {

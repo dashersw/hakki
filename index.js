@@ -37,14 +37,14 @@ async function roleUsers (role) { // return user ids
   return (roles && roles[0] && roles[0].users) || []
 }
 
-async function roleUsersWithParentRoles(role) {
+async function roleUsersWithParentRoles (role) {
   // return user ids
   const result = await RoleUserModel.getUsersWithParentRole(role)
 
   return (result && result[0] && result[0].users) || []
 }
 
-async function roleUsersIncludingInheritedRoles(role) {
+async function roleUsersIncludingInheritedRoles (role) {
   // return user ids
   const roles = Array.isArray(role) ? role : [role]
 

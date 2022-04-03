@@ -111,9 +111,9 @@ function runTests (type) {
   })
 
   /*
- * These tests are adapted from https://github.com/OptimalBits/node_acl/blob/master/test/tests.js
- * and cover all unit tests from node_acl.
- */
+   * These tests are adapted from https://github.com/OptimalBits/node_acl/blob/master/test/tests.js
+   * and cover all unit tests from node_acl.
+   */
   test.serial(`${type}: node_acl tests`, async t => {
     await hakki.allow('guest', 'blogs', 'view')
     await hakki.allow('guest', 'forums', 'view')
@@ -418,7 +418,10 @@ function runTests (type) {
     await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
     await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
 
-    t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`), 'Person is not allowed to use the resource')
+    t.true(
+      await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`),
+      'Person is not allowed to use the resource'
+    )
 
     t.true(await hakki.isRole(`person${id}`, `user${id}`), 'Person has not inherited the user role')
   })
@@ -432,7 +435,10 @@ function runTests (type) {
     await hakki.allow(`admin${id}`, `resource${id}`, `manage${id}`)
     await hakki.allow(`user${id}`, `resource${id}`, `use${id}`)
 
-    t.true(await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`), 'Person is not allowed to use the resource')
+    t.true(
+      await hakki.isAllowed(`person${id}`, `resource${id}`, `use${id}`),
+      'Person is not allowed to use the resource'
+    )
 
     t.true(await hakki.isRole(`person${id}`, `user${id}`), 'Person has not inherited the user role')
   })
