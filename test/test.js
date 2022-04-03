@@ -558,7 +558,7 @@ function runTests (type) {
     await hakki.addUserRoles('randomUser', 'randomRole')
 
     const users = await hakki.roleUsersWithParentRoles('child1')
-    const users2 = await hakki.roleUsersWithParentRoles('parent1')
+    const users2 = await hakki.roleUsersWithParentRoles(['parent1'])
     const users3 = await hakki.roleUsersWithParentRoles('notExistingRole')
 
     t.deepEqual(users.sort(), ['user1', 'user2', 'user3'])
