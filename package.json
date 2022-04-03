@@ -1,6 +1,6 @@
 {
   "name": "hakki",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "An opinionated, modern, and scalable alternative to node_acl.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -43,7 +43,10 @@
     "extends": "standard",
     "rules": {
       "eqeqeq": "off",
-      "arrow-parens": [2, "as-needed"]
+      "arrow-parens": [
+        2,
+        "as-needed"
+      ]
     },
     "parserOptions": {
       "ecmaVersion": 2022
