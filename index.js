@@ -22,7 +22,7 @@ async function removeUserRoles (userId, roles) {
 
   roles = roles.map(r => ({ name: r, userId }))
 
-  const updates = roles.map(r => RoleUserModel.remove(r))
+  const updates = roles.map(r => (RoleUserModel.remove || RoleUserModel.deleteMany).bind(RoleUserModel)(r))
   await Promise.all(updates)
 }
 
@@ -98,7 +98,7 @@ async function addRoleParents (role, parents = []) {
 
 async function removeRoleParents (role, parents) {
   if (arguments.length == 1) {
-    return RoleParentsModel.remove({ role })
+    return (RoleParentsModel.remove || RoleParentsModel.deleteMany).bind(RoleParentsModel)({ role })
   }
 
   if (!Array.isArray(parents)) parents = [parents]
@@ -107,18 +107,19 @@ async function removeRoleParents (role, parents) {
 }
 
 async function removeRole (role) {
-  await RoleUserModel.remove({ name: role })
-  await AllowModel.remove({ role })
+  await (RoleUserModel.remove || RoleUserModel.deleteMany).bind(RoleUserModel)({ name: role })
+  await (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ role })
 }
 
 async function removeResource (resource) {
-  await AllowModel.remove({ resource })
+  await (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ resource })
 }
 
 async function allow (roles, resources, permissions) {
   if (arguments.length == 1 && Array.isArray(roles)) {
     const calls = roles.map(roleAllows =>
-      roleAllows.allows.map(allowDoc => allow(roleAllows.roles, allowDoc.resources, allowDoc.permissions)))
+      roleAllows.allows.map(allowDoc => allow(roleAllows.roles, allowDoc.resources, allowDoc.permissions))
+    )
 
     return Promise.all(calls.flat())
   }
@@ -127,12 +128,9 @@ async function allow (roles, resources, permissions) {
   if (!Array.isArray(resources)) resources = [resources]
   if (!Array.isArray(permissions)) permissions = [permissions]
 
-  const updates =
-    roles.flatMap(role =>
-      resources.flatMap(resource =>
-        permissions.map(permission => upsert(AllowModel)({ role, resource, permission }))
-      )
-    )
+  const updates = roles.flatMap(role =>
+    resources.flatMap(resource => permissions.map(permission => upsert(AllowModel)({ role, resource, permission })))
+  )
 
   return Promise.all(updates)
 }
@@ -142,10 +140,13 @@ async function removeAllow (roles, resources, permissions) {
   if (!Array.isArray(resources)) resources = [resources]
   if (!Array.isArray(permissions)) permissions = [permissions]
 
-  const updates =
-    roles.flatMap(role =>
-      resources.flatMap(resource =>
-        permissions.map(permission => AllowModel.remove({ role, resource, permission }))))
+  const updates = roles.flatMap(role =>
+    resources.flatMap(resource =>
+      permissions.map(permission =>
+        (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ role, resource, permission })
+      )
+    )
+  )
 
   return Promise.all(updates)
 }

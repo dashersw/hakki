@@ -27,7 +27,7 @@
     "ava": "^4.0.1",
     "eslint": "^8.7.0",
     "eslint-config-standard": "^17.0.0-0",
-    "mongoose": "^6.1.7",
+    "mongoose": "^7.5.1",
     "nyc": "^15.1.0",
     "randomstring": "^1.2.2"
   },

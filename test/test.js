@@ -598,9 +598,11 @@ test.afterEach(async t => {
   for (const type of ['memory', 'mongoose']) {
     const typeModels = models(type)
 
-    await typeModels.AllowModel.remove({})
-    await typeModels.RoleUserModel.remove({})
-    await typeModels.RoleParentsModel.remove({})
-    await typeModels.UserModel.remove({})
+    await (typeModels.AllowModel.remove || typeModels.AllowModel.deleteMany).bind(typeModels.AllowModel)({})
+    await (typeModels.RoleUserModel.remove || typeModels.RoleUserModel.deleteMany).bind(typeModels.RoleUserModel)({})
+    await (typeModels.RoleParentsModel.remove || typeModels.RoleParentsModel.deleteMany).bind(
+      typeModels.RoleParentsModel
+    )({})
+    await (typeModels.UserModel.remove || typeModels.UserModel.deleteMany).bind(typeModels.UserModel)({})
   }
 })
