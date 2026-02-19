@@ -33,7 +33,7 @@ Just require mongoose and connect to database however you wish:
 const mongoose = require('mongoose')
 const hakki = require('hakki')({ backend: 'mongoose' })
 
-mongoose.connect('mongodb://localhost:27017/acl', { useNewUrlParser: true })
+mongoose.connect('mongodb://localhost:27017/acl')
 ```
 
 After this point, hakki is ready to use.

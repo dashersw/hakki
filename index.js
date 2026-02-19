@@ -3,7 +3,7 @@ let RoleUserModel
 let RoleParentsModel
 let UserModel
 
-const upsertOpts = { upsert: true, new: true, lean: true }
+const upsertOpts = { upsert: true, returnDocument: 'after', lean: true }
 const upsert = model => doc => model.findOneAndUpdate(doc, doc, upsertOpts)
 
 async function addUserRoles (userId, roles) {
@@ -22,16 +22,18 @@ async function removeUserRoles (userId, roles) {
 
   roles = roles.map(r => ({ name: r, userId }))
 
-  const updates = roles.map(r => (RoleUserModel.remove || RoleUserModel.deleteMany).bind(RoleUserModel)(r))
+  const updates = roles.map(r => RoleUserModel.deleteMany(r))
   await Promise.all(updates)
 }
 
-async function userRoles (userId) { // return roles
+async function userRoles (userId) {
+  // return roles
   const roles = await RoleUserModel.find({ userId }, null, { lean: true })
   return roles.map(r => r.name)
 }
 
-async function roleUsers (role) { // return user ids
+async function roleUsers (role) {
+  // return user ids
   const roles = await RoleUserModel.getUsersWithRole(role)
 
   return (roles && roles[0] && roles[0].users) || []
@@ -53,7 +55,8 @@ async function roleUsersIncludingInheritedRoles (role) {
   return (result && result[0] && result[0].users) || []
 }
 
-async function hasRole (userId, role) { // boolean
+async function hasRole (userId, role) {
+  // boolean
   const query = { userId, name: role }
 
   if (Array.isArray(role)) query.name = { $in: role }
@@ -98,7 +101,7 @@ async function addRoleParents (role, parents = []) {
 
 async function removeRoleParents (role, parents) {
   if (arguments.length == 1) {
-    return (RoleParentsModel.remove || RoleParentsModel.deleteMany).bind(RoleParentsModel)({ role })
+    return RoleParentsModel.deleteMany({ role })
   }
 
   if (!Array.isArray(parents)) parents = [parents]
@@ -107,12 +110,12 @@ async function removeRoleParents (role, parents) {
 }
 
 async function removeRole (role) {
-  await (RoleUserModel.remove || RoleUserModel.deleteMany).bind(RoleUserModel)({ name: role })
-  await (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ role })
+  await RoleUserModel.deleteMany({ name: role })
+  await AllowModel.deleteMany({ role })
 }
 
 async function removeResource (resource) {
-  await (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ resource })
+  await AllowModel.deleteMany({ resource })
 }
 
 async function allow (roles, resources, permissions) {
@@ -141,17 +144,14 @@ async function removeAllow (roles, resources, permissions) {
   if (!Array.isArray(permissions)) permissions = [permissions]
 
   const updates = roles.flatMap(role =>
-    resources.flatMap(resource =>
-      permissions.map(permission =>
-        (AllowModel.remove || AllowModel.deleteMany).bind(AllowModel)({ role, resource, permission })
-      )
-    )
+    resources.flatMap(resource => permissions.map(permission => AllowModel.deleteMany({ role, resource, permission })))
   )
 
   return Promise.all(updates)
 }
 
-async function allowedPermissions (userId, resources) { // returns array of objects
+async function allowedPermissions (userId, resources) {
+  // returns array of objects
   if (!Array.isArray(resources)) resources = [resources]
 
   const roles = await RoleUserModel.find({ userId }, 'name', { lean: true })
@@ -168,7 +168,8 @@ async function allowedPermissions (userId, resources) { // returns array of obje
   return permissions[0]
 }
 
-async function isAllowed (userId, resource, permissions) { // boolean all permissions
+async function isAllowed (userId, resource, permissions) {
+  // boolean all permissions
   if (!Array.isArray(permissions)) permissions = [permissions]
 
   const roles = await RoleUserModel.find({ userId }, 'name', { lean: true })
@@ -192,26 +193,34 @@ async function isAllowed (userId, resource, permissions) { // boolean all permis
 
   if (allowCount) return allowCount >= permissions.length
 
-  const wildcardResourceAllows = await AllowModel.find({
-    resource: /\*/,
-    role: { $in: roleNames },
-    permission: { $in: permissions }
-  }, null, { lean: true })
+  const wildcardResourceAllows = await AllowModel.find(
+    {
+      resource: /\*/,
+      role: { $in: roleNames },
+      permission: { $in: permissions }
+    },
+    null,
+    { lean: true }
+  )
 
   if (!wildcardResourceAllows.length) return false
 
-  hasWildcardAccess = wildcardResourceAllows.some(a => new RegExp(`^${a.resource.replace(/\*/g, '.+')}$`).test(resource))
+  hasWildcardAccess = wildcardResourceAllows.some(a =>
+    new RegExp(`^${a.resource.replace(/\*/g, '.+')}$`).test(resource)
+  )
 
   return hasWildcardAccess
 }
 
-async function areAnyRolesAllowed (roles, resource, permissions) { // boolean
+async function areAnyRolesAllowed (roles, resource, permissions) {
+  // boolean
   const allowed = await AllowModel.areAnyRolesAllowed(roles, resource, permissions)
 
   return !!allowed.length
 }
 
-async function whatResources (role, permissions) { // return resources role has perm over
+async function whatResources (role, permissions) {
+  // return resources role has perm over
   if (!Array.isArray(role)) role = [role]
   const parents = await getAllParentRoles(role)
   role = role.concat(parents)

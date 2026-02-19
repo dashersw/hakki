@@ -6,7 +6,7 @@ const randomstring = require('randomstring')
 const models = require('../lib/models')
 
 test.before(async t => {
-  await mongoose.connect('mongodb://localhost:27017/hakki_tests', { useNewUrlParser: true })
+  await mongoose.connect('mongodb://localhost:27017/hakki_tests')
   await mongoose.connection.db.dropDatabase()
 })
 
@@ -92,20 +92,24 @@ function runTests (type) {
     const res3 = await hakki.addRoleParents('unknown role')
     t.like(res3, { role: 'unknown role', parents: [] })
 
-    const res4 = await models(type).RoleParentsModel.findOneAndUpdate({}, {}, { upsert: true, new: true, lean: true })
+    const res4 = await models(type).RoleParentsModel.findOneAndUpdate(
+      {},
+      {},
+      { upsert: true, returnDocument: 'after', lean: true }
+    )
     t.like(res4, { role: 'unknown role', parents: [] })
 
     const res5 = await models(type).RoleParentsModel.findOneAndUpdate(
       { role: 'unknown role 2' },
       { $addToSet: { parents: { $each: ['unknown role 3'] } } },
-      { upsert: true, new: true, lean: true }
+      { upsert: true, returnDocument: 'after', lean: true }
     )
     t.like(res5, { role: 'unknown role 2', parents: ['unknown role 3'] })
 
     const res6 = await models(type).RoleParentsModel.findOneAndUpdate(
       { role: 'unknown role 2' },
       { $addToSet: { parents: { $each: ['unknown role 4'] } } },
-      { upsert: true, new: true, lean: true }
+      { upsert: true, returnDocument: 'after', lean: true }
     )
     t.like(res6, { role: 'unknown role 2', parents: ['unknown role 3', 'unknown role 4'] })
   })
@@ -598,11 +602,9 @@ test.afterEach(async t => {
   for (const type of ['memory', 'mongoose']) {
     const typeModels = models(type)
 
-    await (typeModels.AllowModel.remove || typeModels.AllowModel.deleteMany).bind(typeModels.AllowModel)({})
-    await (typeModels.RoleUserModel.remove || typeModels.RoleUserModel.deleteMany).bind(typeModels.RoleUserModel)({})
-    await (typeModels.RoleParentsModel.remove || typeModels.RoleParentsModel.deleteMany).bind(
-      typeModels.RoleParentsModel
-    )({})
-    await (typeModels.UserModel.remove || typeModels.UserModel.deleteMany).bind(typeModels.UserModel)({})
+    await typeModels.AllowModel.deleteMany({})
+    await typeModels.RoleUserModel.deleteMany({})
+    await typeModels.RoleParentsModel.deleteMany({})
+    await typeModels.UserModel.deleteMany({})
   }
 })

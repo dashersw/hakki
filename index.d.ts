@@ -17,9 +17,8 @@ type User = {
   userId: string
 }
 
-type RemovalResponse = {
-  n: number
-  ok: number
+type DeletionResponse = {
+  acknowledged: boolean
   deletedCount: number
 }
 
@@ -46,25 +45,17 @@ type hakki = {
 
   hasRole(userId: string, role: string | string[]): Promise<boolean>
 
-  addRoleParents(
-    role: string,
-    parents: string | string[]
-  ): Promise<RoleParentsDocument>
+  addRoleParents(role: string, parents: string | string[]): Promise<RoleParentsDocument>
 
-  removeRoleParents(role: string): Promise<RemovalResponse>
+  removeRoleParents(role: string): Promise<DeletionResponse>
 
-  removeRoleParents(
-    role: string,
-    parents?: string | string[]
-  ): Promise<RoleParentsDocument>
+  removeRoleParents(role: string, parents?: string | string[]): Promise<RoleParentsDocument>
 
   removeRole(role: string): Promise<void>
 
   removeResource(resource: string): Promise<void>
 
-  allow(
-    bulkAccessRuleRequest: BulkAccessRuleRequest | BulkAccessRuleRequest[]
-  ): Promise<AccessRuleDocument[]>
+  allow(bulkAccessRuleRequest: BulkAccessRuleRequest | BulkAccessRuleRequest[]): Promise<AccessRuleDocument[]>
 
   allow(
     roles: string | string[],
@@ -76,29 +67,15 @@ type hakki = {
     roles: string | string[],
     resources: string | string[],
     permissions: string | string[]
-  ): Promise<RemovalResponse[]>
+  ): Promise<DeletionResponse[]>
 
-  allowedPermissions<T extends string, U = { [K in T]: string[] }>(
-    userId: string,
-    resources: T | T[]
-  ): Promise<U>
+  allowedPermissions<T extends string, U = { [K in T]: string[] }>(userId: string, resources: T | T[]): Promise<U>
 
-  isAllowed(
-    userId: string,
-    resource: string,
-    permissions: string | string[]
-  ): Promise<boolean>
+  isAllowed(userId: string, resource: string, permissions: string | string[]): Promise<boolean>
 
-  areAnyRolesAllowed(
-    roles: string[],
-    resource: string,
-    permissions: string[]
-  ): Promise<boolean>
+  areAnyRolesAllowed(roles: string[], resource: string, permissions: string[]): Promise<boolean>
 
-  whatResources(
-    role: string | string[],
-    permissions: string | string[]
-  ): Promise<string[] | Record<string, string[]>>
+  whatResources(role: string | string[], permissions: string | string[]): Promise<string[] | Record<string, string[]>>
 
   isRole(userId: string, role: string): Promise<boolean>
 
