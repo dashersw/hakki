@@ -1,30 +1,51 @@
 # hakki
+
 **An opinionated, modern, and scalable alternative to node_acl.**
 
 ## Features
-* Provides the same functionality with [node_acl](https://github.com/OptimalBits/node_acl) except for `middleware`
-* Works with promises and async/await out of the box instead of callbacks
-* Requires and works with mongoose
-* Built specifically for MongoDB with aggregation features
-* Scalable architecture to support millions of operations
-* Supports wildcard resources for a lighter database
+
+- Provides the same functionality with [node_acl](https://github.com/OptimalBits/node_acl) except for `middleware`
+- Works with promises and async/await out of the box instead of callbacks
+- Requires and works with mongoose
+- Built specifically for MongoDB with aggregation features
+- Scalable architecture to support millions of operations
+- Supports wildcard resources for a lighter database
+
+## Breaking changes in v3
+
+- Minimum Node.js version is now `20.19.0`
+- Supported mongoose peer versions are now `^7`, `^8`, and `^9`
+- `mongoose` versions `^5` and `^6` are no longer supported
+- Deletion responses now align with modern mongoose driver semantics (`acknowledged`, `deletedCount`)
+
+## Migrating from v2 to v3
+
+- Upgrade Node.js runtime to `>=20.19.0`
+- Upgrade mongoose to `^7.0.0` or newer (`^8`/`^9` are also supported)
+- If your code checks deletion responses from `removeAllow` or one-argument `removeRoleParents`, update checks from `n`/`ok` to `acknowledged`/`deletedCount`
 
 ## Migrating from v1 to v2
+
 As of version 2 hakki runs with an in-memory backend by default. This means mongoose is an optional dependency, and one can use hakki in projects that don't use MongoDB. This is particularly useful for unit testing purposes where hakki is required but running MongoDB isn't feasible.
 
 In-memory backend is now the default and users are required to import and then call hakki with an options object. Check out [Providing mongoose](#providing-mongoose) for instructions on how to use the mongoose backend. Simply requiring hakki without calling it with an options object will result in the default behavior of using in-memory backend.
 
 ## Motivation
+
 [node_acl](https://github.com/OptimalBits/node_acl) is great until you need to scale it with MongoDB. It's originally built for redis, and MongoDB backend is problematic at scale where you modify the same document that holds 200,000 properties in it. The fact that it works on a MongoDB connection makes it hard to operate it with clusters, as well.
 
 hakki addresses these concerns, respects your MongoDB connection logic with [mongoose](http://mongoosejs.com), and offers a modern, scalable experience both during development and for your infrastructure.
 
 ## Usage
+
 ### Installation
+
 ```bash
 npm install hakki
 ```
+
 ### Providing mongoose
+
 Since mongoose and MongoDB in general has a lot of connection options, and hakki only wants to focus on ACL, it expects you to have a working mongoose connection. It will create four collections in the database of your connection: `acl_allows`, `acl_role_parents`, `acl_role_users` and `acl_users`.
 
 Just require mongoose and connect to database however you wish:
@@ -39,6 +60,7 @@ mongoose.connect('mongodb://localhost:27017/acl')
 After this point, hakki is ready to use.
 
 ### Example
+
 ```js
 await hakki.allow(['developer', 'guest'], ['branches', 'tags'], ['list', 'fetch'])
 await hakki.allow('master', ['branches', 'tags'], 'push')
@@ -56,26 +78,27 @@ branches: [ 'fetch', 'push', 'list' ]
 ```
 
 ## API
+
 Hakki supports the same API footprint as [node_acl](https://github.com/OptimalBits/node_acl) with the following functions:
 
-* addUserRoles
-* removeUserRoles
-* userRoles
-* roleUsers
-* hasRole
-* removeRole
-* allow
-* removeAllow
-* allowedPermissions
-* isAllowed
-* areAnyRolesAllowed
-* whatResources
-* removeResource
-* addRoleParents
-* removeRoleParents
-* isRole
-* getDistinctRoles
-* getDistinctPermissions
+- addUserRoles
+- removeUserRoles
+- userRoles
+- roleUsers
+- hasRole
+- removeRole
+- allow
+- removeAllow
+- allowedPermissions
+- isAllowed
+- areAnyRolesAllowed
+- whatResources
+- removeResource
+- addRoleParents
+- removeRoleParents
+- isRole
+- getDistinctRoles
+- getDistinctPermissions
 
   isRole is a new API that mimicks the behavior of a hasRole call for a user for parent roles as well. Technically when one uses `addRoleParents`, a child role attains an `is-a` relationship with the parent. However, this isn't reflected in `userRoles` or `hasRole`, but in `isAllowed` or `allowedPermissions`. `isRole` is introduced to at least partially cover for this.
 
